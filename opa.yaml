@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-policy-agent
+  labels:
+    app.kubernetes.io/name: open-policy-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: open-policy-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: open-policy-agent
+    spec:
+      containers:
+        - name: open-policy-agent
+          image: openpolicyagent/opa:latest
+          ports:
+            - containerPort: 8181
+          command: ["opa", "run", "--server", "--log-level=debug"]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-policy-agent
+spec:
+  selector:
+    app.kubernetes.io/name: open-policy-agent
+  ports:
+    - protocol: TCP
+      port: 8181
+      targetPort: 8181
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: opa-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "opa.127.0.0.1.nip.io"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: open-policy-agent
+                port:
+                  number: 8181
