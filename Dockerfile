@@ -1,5 +1,7 @@
 FROM alpine:latest as bundler
 
+# The OPA container doesn't seem to let you run arbitrary commands, so using alpine to manually build the bundle rather than `opa build`.
+
 ADD sample-bundle /sample-bundle
 RUN tar czvf /sample-bundle.tar.gz -C /sample-bundle /sample-bundle
 RUN tar tvf /sample-bundle.tar.gz
